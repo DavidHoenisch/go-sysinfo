@@ -1,41 +1,43 @@
 package gosysinfo
 
-import (
-	"errors"
-	"os"
-)
+import "os"
 
 const (
-	tpm_base               string = "/sys/class/tpm/tpm0"
-	tpm_version_major      string = "/sys/class/tpm/tpm0/tpm_version_major"
-	tpm_device_description string = "/sys/class/tpm/tpm0/device/description"
+	tpmBase               = "/sys/class/tpm/tpm0"
+	tpmVersionMajor       = "/sys/class/tpm/tpm0/tpm_version_major"
+	tpmDeviceDescription  = "/sys/class/tpm/tpm0/device/description"
 )
 
-type TpmInfo struct {
-	TpmVersionMajor      string
-	TpmDeviceDescription string
+type TPM interface {
+	GetTpmVersion() string
+	GetTpmDescription() string
 }
 
-type Tpm interface {
-	GetTpm() *TpmInfo
+var _ TPM = Reader{}
+
+var tpmBaseExists = func() bool {
+	_, err := os.Stat(tpmBase)
+	return err == nil
 }
 
-// GetTpm return info about the computers TPM, if it exists. If no
-// TPM exists nil is returned
-func GetTpm(r SysReader) *TpmInfo {
-	// check if tmp dir exists
-	_, err := os.Stat(tpm_base)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
+func GetTpmVersion(r SysReader) string {
+	if !tpmBaseExists() {
+		return ""
 	}
-
-	return &TpmInfo{
-		TpmVersionMajor:      getTpmInfo(r, tpm_version_major),
-		TpmDeviceDescription: getTpmInfo(r, tpm_device_description),
-	}
+	return readSysFile(r, tpmVersionMajor)
 }
 
-// TODO: this is common logic that could be extracted into common logic
-func getTpmInfo(r SysReader, path string) string {
-	return r.Read(path)
+func GetTpmDescription(r SysReader) string {
+	if !tpmBaseExists() {
+		return ""
+	}
+	return readSysFile(r, tpmDeviceDescription)
+}
+
+func (r Reader) GetTpmVersion() string {
+	return GetTpmVersion(r)
+}
+
+func (r Reader) GetTpmDescription() string {
+	return GetTpmDescription(r)
 }

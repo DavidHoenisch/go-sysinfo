@@ -5,9 +5,8 @@ import (
 )
 
 const (
-	fb0_base         string = "/sys/class/graphics/fb0"
-	fb0_virtual_size string = "/sys/class/graphics/fb0/virtual_size"
-	fb0_screen_modes string = "/sys/class/graphics/fb0/modes"
+	fb0_virtual_size = "/sys/class/graphics/fb0/virtual_size"
+	fb0_screen_modes = "/sys/class/graphics/fb0/modes"
 )
 
 type ScreenSize struct {
@@ -16,13 +15,15 @@ type ScreenSize struct {
 }
 
 type ScreenMode struct {
-	string
+	Value string
 }
 
 type Graphics interface {
 	GetScreenVirtualSize() ScreenSize
-	GetScreenModes() ScreenMode
+	GetScreenMode() ScreenMode
 }
+
+var _ Graphics = Reader{}
 
 func GetScreenVirtualSize(r SysReader) ScreenSize {
 	content := r.Read(fb0_virtual_size)
@@ -30,24 +31,20 @@ func GetScreenVirtualSize(r SysReader) ScreenSize {
 		return ScreenSize{X: "0", Y: "0"}
 	}
 
-	res := strings.Split(content, ",")
+	res := strings.Split(strings.TrimSpace(content), ",")
 	if len(res) != 2 {
 		return ScreenSize{X: "0", Y: "0"}
 	}
 
 	return ScreenSize{
-		X: res[0],
-		Y: res[1],
+		X: strings.TrimSpace(res[0]),
+		Y: strings.TrimSpace(res[1]),
 	}
 }
 
 func GetScreenMode(r SysReader) ScreenMode {
-	content := r.Read(fb0_virtual_size)
-	if content == "" {
-		return ScreenMode{content}
-	}
-
-	return ScreenMode{content}
+	content := r.Read(fb0_screen_modes)
+	return ScreenMode{Value: strings.TrimSpace(content)}
 }
 
 func (r Reader) GetScreenVirtualSize() ScreenSize {

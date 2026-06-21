@@ -1,5 +1,7 @@
 package gosysinfo
 
-// func getFileContent(r SysReader, path string) string {
-// 	return r.Read(path)
-// }
+import "strings"
+
+func readSysFile(r SysReader, path string) string {
+	return strings.TrimSpace(r.Read(path))
+}

@@ -5,12 +5,6 @@ import (
 	"testing"
 )
 
-type mockReader map[string]string
-
-func (m mockReader) Read(path string) string {
-	return m[path]
-}
-
 func TestGetScreenVirtualSize(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -79,29 +73,29 @@ func TestGetScreenMode(t *testing.T) {
 	}{
 		{
 			name:    "valid input",
-			content: "1920,1080",
-			want:    ScreenMode{"1920,1080"},
+			content: "1920x1080",
+			want:    ScreenMode{Value: "1920x1080"},
+		},
+		{
+			name:    "multiline modes",
+			content: "1920x1080\n1280x720",
+			want:    ScreenMode{Value: "1920x1080\n1280x720"},
 		},
 		{
 			name:    "empty content",
 			content: "",
-			want:    ScreenMode{""},
+			want:    ScreenMode{Value: ""},
 		},
 		{
 			name: "nil content",
-			want: ScreenMode{""},
-		},
-		{
-			name:    "large resolution",
-			content: "3840,2160",
-			want:    ScreenMode{"3840,2160"},
+			want: ScreenMode{Value: ""},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			reader := mockReader{}
 			if tt.name != "nil content" {
-				reader[fb0_virtual_size] = tt.content
+				reader[fb0_screen_modes] = tt.content
 			}
 
 			if got := GetScreenMode(reader); !reflect.DeepEqual(got, tt.want) {

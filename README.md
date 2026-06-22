@@ -156,6 +156,8 @@ import (
 	gosysinfo "github.com/DavidHoenisch/go-sysinfo"
 	"github.com/DavidHoenisch/go-sysinfo/clamav"
 	"github.com/DavidHoenisch/go-sysinfo/gnome"
+	"github.com/DavidHoenisch/go-sysinfo/hyprland"
+	"github.com/DavidHoenisch/go-sysinfo/omarchy"
 )
 
 cr := clamav.Reader{FS: gosysinfo.Reader{}}
@@ -168,6 +170,17 @@ gr := gnome.Reader{FS: gosysinfo.Reader{}}
 if gr.Available() {
 	fmt.Println(gnome.GetSessionInfo(gr))
 }
+
+or := omarchy.Reader{}
+if or.Available() {
+	fmt.Println(omarchy.GetInfo(or))
+}
+
+hr := hyprland.Reader{}
+if hr.Available() {
+	fmt.Println(hyprland.GetSessionInfo(hr))
+	fmt.Println(hyprland.OptionString(hyprland.GetOption(hr, "general:gaps_in")))
+}
 ```
 
 When an integration is not present, getters return empty values rather than errors. Use `ErrNotAvailable` only when you need to distinguish "integration absent" from "field missing."
@@ -179,6 +192,14 @@ Read-only clamd facts: availability, version, database stats, and config paths. 
 ### GNOME (`go-sysinfo/gnome`)
 
 Read-only GNOME session facts when GNOME is the active desktop: shell version, session env, and individual gsettings values.
+
+### Omarchy (`go-sysinfo/omarchy`)
+
+Read-only Omarchy facts via the `omarchy` CLI: version, branch, channel, current theme, font, and toggle state. Does not read config files directly.
+
+### Hyprland (`go-sysinfo/hyprland`)
+
+Read-only Hyprland runtime facts via `hyprctl -j`: version, monitors, workspaces, clients, keybinds, config errors, and effective config options (`getoption`). Works on any Hyprland install, not only Omarchy.
 
 ## Errors
 
@@ -210,7 +231,7 @@ go test ./...
 Integration smoke tests (only on machines with clamd/GNOME installed):
 
 ```bash
-go test -tags=integration ./clamav/... ./gnome/...
+go test -tags=integration ./clamav/... ./gnome/... ./omarchy/... ./hyprland/...
 ```
 
 ## License

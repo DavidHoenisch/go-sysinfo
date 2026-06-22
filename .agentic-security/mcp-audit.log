@@ -1,0 +1,1 @@
+{"ts":"2026-06-22T17:11:29.571Z","sessionId":"1597916-pdmixl","tool":"scan_diff","outcome":"ok","args":"{\"files\":[\"internal/probe/exec.go\",\"internal/probe/env.go\",\"internal/probe/socket.go\",\"internal/probe/config.go\",\"clamav/clamav.go\",\"clamav/reader.go\",\"clamav/socket.go\",\"gnome/gnome.go\",\"gnome/reader.go\",\"errors.go\"]}","prev":"GENESIS"}

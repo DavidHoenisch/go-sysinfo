@@ -145,12 +145,48 @@ info := gosysinfo.GetOSRelease(r)
 
 Returns an empty struct when the file is missing or unreadable. Quoted values are unquoted per the os-release spec.
 
+## Integrations
+
+Optional subpackages read facts from installed software and desktop environments. They follow the same getter style as core but use injectable backends (unix sockets, commands, environment) instead of sysfs/proc alone.
+
+The core package stays zero-dependency. Subpackages may import core for `SysReader`; core never imports subpackages.
+
+```go
+import (
+	gosysinfo "github.com/DavidHoenisch/go-sysinfo"
+	"github.com/DavidHoenisch/go-sysinfo/clamav"
+	"github.com/DavidHoenisch/go-sysinfo/gnome"
+)
+
+cr := clamav.Reader{FS: gosysinfo.Reader{}}
+if cr.Available() {
+	fmt.Println(clamav.GetVersion(cr))
+	fmt.Println(clamav.GetDatabaseStats(cr))
+}
+
+gr := gnome.Reader{FS: gosysinfo.Reader{}}
+if gr.Available() {
+	fmt.Println(gnome.GetSessionInfo(gr))
+}
+```
+
+When an integration is not present, getters return empty values rather than errors. Use `ErrNotAvailable` only when you need to distinguish "integration absent" from "field missing."
+
+### ClamAV (`go-sysinfo/clamav`)
+
+Read-only clamd facts: availability, version, database stats, and config paths. Uses the clamd unix socket (`PING`, `VERSION`, `STATS`) with CLI fallback.
+
+### GNOME (`go-sysinfo/gnome`)
+
+Read-only GNOME session facts when GNOME is the active desktop: shell version, session env, and individual gsettings values.
+
 ## Errors
 
 | Error | When |
 |-------|------|
 | `ErrNetworkNotFound` | Unknown network interface |
 | `ErrBlockDeviceNotFound` | Unknown block device name |
+| `ErrNotAvailable` | Optional integration not present on the system |
 
 Other failures (for example unreadable proc files) typically surface as empty strings rather than errors, matching the `SysReader` contract.
 
@@ -169,6 +205,12 @@ Run tests:
 
 ```bash
 go test ./...
+```
+
+Integration smoke tests (only on machines with clamd/GNOME installed):
+
+```bash
+go test -tags=integration ./clamav/... ./gnome/...
 ```
 
 ## License

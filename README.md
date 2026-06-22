@@ -1,8 +1,8 @@
 # go-sysinfo
 
-A small Go library for reading Linux system information from `/sys` and `/proc`. It exposes hardware and network facts through a consistent, testable API built around an injectable `SysReader`.
+A small Go library for reading Linux system information from `/sys`, `/proc`, and `/etc`. It exposes hardware, network, and OS facts through a consistent, testable API built around an injectable `SysReader`.
 
-**Platform:** Linux only (reads from sysfs and procfs).
+**Platform:** Linux only (reads from sysfs, procfs, and `/etc/os-release`).
 
 ## Install
 
@@ -133,6 +133,17 @@ desc := gosysinfo.GetTpmDescription(r)
 ```
 
 Both return an empty string when no TPM is present at `/sys/class/tpm/tpm0`.
+
+### OS release
+
+Parse `/etc/os-release`:
+
+```go
+info := gosysinfo.GetOSRelease(r)
+// info.Name, info.PrettyName, info.ID, info.VersionID, info.HomeURL, ...
+```
+
+Returns an empty struct when the file is missing or unreadable. Quoted values are unquoted per the os-release spec.
 
 ## Errors
 

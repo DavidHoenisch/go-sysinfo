@@ -110,6 +110,19 @@ stats, err := gosysinfo.GetNetworkStatistics(r, "eth0")
 // per-field sysfs reads under /sys/class/net/<if>/
 ```
 
+### Battery
+
+List battery power supplies from `/sys/class/power_supply/`, then fetch details per battery:
+
+```go
+batteries, err := gosysinfo.ListBatteries()
+
+info, err := gosysinfo.GetBatteryInfo(r, "BAT0")
+// info.Status, info.Capacity, info.EnergyNow, info.PowerNow, info.Technology, ...
+```
+
+`ListBatteries` returns only entries whose `type` is `Battery` (AC adapters and other power supplies are skipped). Values are returned as read from sysfs (microjoules, microwatts, microvolts where applicable).
+
 ### HDD / block devices
 
 List devices, then fetch details per device:
@@ -207,6 +220,7 @@ Read-only Hyprland runtime facts via `hyprctl -j`: version, monitors, workspaces
 |-------|------|
 | `ErrNetworkNotFound` | Unknown network interface |
 | `ErrBlockDeviceNotFound` | Unknown block device name |
+| `ErrBatteryNotFound` | Unknown or non-battery power supply name |
 | `ErrNotAvailable` | Optional integration not present on the system |
 
 Other failures (for example unreadable proc files) typically surface as empty strings rather than errors, matching the `SysReader` contract.
